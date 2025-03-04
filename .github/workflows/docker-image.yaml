@@ -49,4 +49,4 @@ jobs:
           file: docker/php/package.Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name }},ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/nyholm/satisfy:${{ github.event.release.tag_name }},ghcr.io/nyholm/satisfy:latest
