@@ -29,9 +29,9 @@
     "satisfy": {
       "type": "php",
       "processes": {
-        "max": 16,
-        "spare": 1,
-        "idle_timeout": 30
+        "max": 32,
+        "spare": 2,
+        "idle_timeout": 20
       },
       "user": "www-data",
       "group": "www-data",
