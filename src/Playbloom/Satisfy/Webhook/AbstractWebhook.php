@@ -39,10 +39,6 @@ abstract class AbstractWebhook
         $this->debug = $debug;
     }
 
-    /**
-     * @throws BadRequestHttpException
-     * @throws ServiceUnavailableHttpException
-     */
     public function getResponse(Request $request): Response
     {
         try {
@@ -50,9 +46,9 @@ abstract class AbstractWebhook
             $repository = $this->getRepository($request);
             $status = $this->handle($repository, $context);
         } catch (\InvalidArgumentException $exception) {
-            throw new BadRequestHttpException($exception->getMessage(), $exception);
+            return new Response(json_encode($this->getArrayFromException($exception)), Response::HTTP_BAD_REQUEST);
         } catch (\Throwable $exception) {
-            throw new ServiceUnavailableHttpException(null, '', $exception, $exception->getCode());
+            return new Response(json_encode($this->getArrayFromException($exception)), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         $success = 0 === $status;
@@ -66,14 +62,9 @@ abstract class AbstractWebhook
                 'exception' => null,
             ];
 
-            if (null !== $context->getThrowable()) {
-                $content['exception'] = [
-                    'message' => $context->getThrowable()->getMessage(),
-                    'code' => $context->getThrowable()->getCode(),
-                    'file' => $context->getThrowable()->getFile(),
-                    'line' => $context->getThrowable()->getLine(),
-                    'trace' => $context->getThrowable()->getTraceAsString(),
-                ];
+            $throwable = $context->getThrowable();
+            if (null !== $throwable) {
+                $content['exception'] = $this->getArrayFromException($throwable);
             }
 
             $status = json_encode($content);
@@ -111,5 +102,20 @@ abstract class AbstractWebhook
         }
 
         return null;
+    }
+
+    /**
+     * @param \Throwable $throwable
+     * @return array
+     */
+    private function getArrayFromException(\Throwable $throwable): array
+    {
+        return [
+            'message' => $throwable->getMessage(),
+            'code' => $throwable->getCode(),
+            'file' => $throwable->getFile(),
+            'line' => $throwable->getLine(),
+            'trace' => $throwable->getTraceAsString(),
+        ];
     }
 }
